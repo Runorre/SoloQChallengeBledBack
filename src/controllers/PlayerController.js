@@ -1,6 +1,5 @@
 import axios from "axios";
 import { PlayerModel } from "../models";
-import { get } from "http";
 
 export default {
     addPlayer: async (req, res) => {
@@ -160,8 +159,39 @@ export default {
                 message: 'Internal server error'
             });
         }
-    }
-    ,
+    },
+    deletePlayer: async (req, res) => {
+        try {
+            const {id} = req.params;
+            if (!id) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Missing required fields'
+                });
+            }
+
+            const player = await PlayerModel.findById(id);
+            if (!player) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Player not found'
+                });
+            }
+
+            await player.delete();
+
+            return res.status(200).json({
+                success: true,
+                message: 'Player deleted successfully'
+            });
+        } catch (error) {
+            console.error("deletePlayer", error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
+    },
     refreshData: async (req, res) => {
         try {
             const players = await PlayerModel.find();
