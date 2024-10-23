@@ -1,6 +1,26 @@
 import axios from "axios";
 import { PlayerModel } from "../models";
 
+const Rank = {
+    IRON: 0,
+    BRONZE: 400,
+    SILVER: 800,
+    GOLD: 1200,
+    PLATINUM: 1600,
+    EMERALD: 2000,
+    DIAMOND: 2400,
+    MASTER: 2800,
+    GRANDMASTER: 2801,
+    CHALLENGER: 2802
+};
+
+const Tier = {
+    "IV" : 0,
+    "III" : 100,
+    "II" : 200,
+    "I" : 300
+};
+
 export default {
     addPlayer: async (req, res) => {
         try {
@@ -36,16 +56,14 @@ export default {
                 summonerName: summonerData.name,
                 puuid: summonerData.puuid,
                 summonerId: summonerData.id,
-                tier: '0',
-                rank: 'Unranked',
-                LP: 0,
                 profileIconId: summonerData.profileIconId
             });
             await player.save();
 
             return res.status(201).json({
                 success: true,
-                message: 'Player added successfully'
+                message: 'Player added successfully',
+                playerId : player._id
             });
         } catch (error) {
             console.error("addPlayer", error);
@@ -57,7 +75,7 @@ export default {
     },
     getPlayers: async (req, res) => {
         try {
-            const players = await PlayerModel.find().select({name: 1, summonerName: 1, rank: 1, tier : 1, LP: 1, profileIconId: 1, _id : 1});
+            const players = await PlayerModel.find().select({name: 1, summonerName: 1, rankActually: 1, divisionActually : 1, LPActually: 1, rankPeak: 1, divisionPeak : 1, LPPeak: 1, profileIconId: 1, _id : 1});
             if (!players) {
                 return res.status(404).json({
                     success: false,
@@ -213,13 +231,38 @@ export default {
                         'X-Riot-Token': process.env.RIOT_API_KEY
                     }
                 })
+                const OTPData = await axios.get(`https://euw1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${player.puuid}`, {
+                    headers: {
+                        'X-Riot-Token': process.env.RIOT_API_KEY
+                    }
+                })
 
                 player.summonerName = summonerData.name;
                 player.summonerId = summonerData.id;
                 player.profileIconId = summonerData.profileIconId;
-                player.tier = rankedData.tier;
-                player.rank = rankedData.rank;
-                player.LP = rankedData.leaguePoints;
+
+                player.divisionActually = rankedData[0].tier;
+                player.rankActually = rankedData[0].rank;
+                player.LPActually = rankedData[0].leaguePoints;
+
+                if (Rank[player.rankActually] > Rank[player.rankPeak]) {
+                    player.rankPeak = player.rankActually;
+                    player.divisionPeak = player.divisionActually;
+                    player.LPPeak = player.LPActually;
+                } else if (Rank[player.rankActually] === Rank[player.rankPeak]) {
+                    if (Tier[player.divisionActually] > Tier[player.divisionPeak]) {
+                        player.divisionPeak = player.divisionActually;
+                        player.LPPeak = player.LPActually;
+                    } else if (Tier[player.divisionActually] === Tier[player.divisionPeak]) {
+                        if (player.LPActually > player.LPPeak) {
+                            player.LPPeak = player.LPActually;
+                        }
+                    }
+                }
+
+                for (const OTP of OTPData) {
+                    player.OTP.push(OTP.championId);
+                }
                 await player.save();
             }
 

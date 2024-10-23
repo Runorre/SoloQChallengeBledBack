@@ -17,17 +17,29 @@ export const PlayerModel = new Schema({
         type: String,
         required: true
     },
-    division : {
+    divisionPeak : {
         type: String,
-        required: true
+        default : "IV"
     },
-    rank : {
+    rankPeak : {
         type: String,
-        required: true
+        default : "Iron"
     },
-    LP : {
+    LPPeak : {
         type: Number,
-        required: true
+        default : 0
+    },
+    divisionActually : {
+        type: String,
+        default : "IV"
+    },
+    rankActually : {
+        type: String,
+        default : "Iron"
+    },
+    LPActually : {
+        type: Number,
+        default : 0
     },
     profileIconId : {
         type: String,
