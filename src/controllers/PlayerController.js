@@ -1,7 +1,7 @@
 import axios from "axios";
-import { PlayerModel } from "../models";
+import { PlayerModel } from "../models/index.js";
 
-const Rank = {
+const Tier = {
     IRON: 0,
     BRONZE: 400,
     SILVER: 800,
@@ -14,7 +14,7 @@ const Rank = {
     CHALLENGER: 2802
 };
 
-const Tier = {
+const Rank = {
     "IV" : 0,
     "III" : 100,
     "II" : 200,
@@ -32,7 +32,7 @@ export default {
                 });
             }
 
-            const playerData = await axios.get(`https://euw1.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`, {
+            const playerData = await axios.get(`https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`, {
                 headers: {
                     'X-Riot-Token': process.env.RIOT_API_KEY
                 }
@@ -43,8 +43,7 @@ export default {
                     message: 'Player not found'
                 });
             }
-
-            const puuid = playerData.puuid;
+            const puuid = playerData.data.puuid;
             const summonerData = await axios.get(`https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${puuid}`, {
                 headers: {
                     'X-Riot-Token': process.env.RIOT_API_KEY
@@ -53,10 +52,10 @@ export default {
 
             const player = new PlayerModel({
                 name: nameOfPlayer,
-                summonerName: summonerData.name,
-                puuid: summonerData.puuid,
-                summonerId: summonerData.id,
-                profileIconId: summonerData.profileIconId
+                summonerName: `${gameName}#${tagLine}`,
+                puuid: summonerData.data.puuid,
+                summonerId: summonerData.data.id,
+                profileIconId: summonerData.data.profileIconId
             });
             await player.save();
 
@@ -65,6 +64,7 @@ export default {
                 message: 'Player added successfully',
                 playerId : player._id
             });
+
         } catch (error) {
             console.error("addPlayer", error);
             return res.status(500).json({
@@ -75,7 +75,7 @@ export default {
     },
     getPlayers: async (req, res) => {
         try {
-            const players = await PlayerModel.find().select({name: 1, summonerName: 1, rankActually: 1, divisionActually : 1, LPActually: 1, rankPeak: 1, divisionPeak : 1, LPPeak: 1, profileIconId: 1, _id : 1});
+            const players = await PlayerModel.find().select({name: 1, summonerName: 1, rankActually: 1, divisionActually : 1, LPActually: 1, rankPeak: 1, divisionPeak : 1, LPPeak: 1, profileIconId: 1, numberOfGames : 1, penality : 1, _id : 1});
             if (!players) {
                 return res.status(404).json({
                     success: false,
@@ -237,29 +237,38 @@ export default {
                     }
                 })
 
-                player.summonerName = summonerData.name;
-                player.summonerId = summonerData.id;
-                player.profileIconId = summonerData.profileIconId;
+                player.summonerId = summonerData.data.id;
+                player.profileIconId = summonerData.data.profileIconId;
 
-                player.divisionActually = rankedData[0].tier;
-                player.rankActually = rankedData[0].rank;
-                player.LPActually = rankedData[0].leaguePoints;
+                if (player.rankActually != rankedData.data[0].rank || player.divisionActually != rankedData.data[0].tier || player.LPActually != rankedData.data[0].leaguePoints) {
+                    player.numberOfGames++;
+                    if (player.numberOfGames > 21) {
+                        player.penality += 1;
+                    }
+                }
 
-                if (Rank[player.rankActually] > Rank[player.rankPeak]) {
-                    player.rankPeak = player.rankActually;
-                    player.divisionPeak = player.divisionActually;
-                    player.LPPeak = player.LPActually;
-                } else if (Rank[player.rankActually] === Rank[player.rankPeak]) {
-                    if (Tier[player.divisionActually] > Tier[player.divisionPeak]) {
+                player.divisionActually = rankedData.data[0].tier;
+                player.rankActually = rankedData.data[0].rank;
+                player.LPActually = rankedData.data[0].leaguePoints;
+
+                if (player.rankActually != "UNRANKED") {
+                    if (Rank[player.rankActually] > Rank[player.rankPeak]) {
+                        player.rankPeak = player.rankActually;
                         player.divisionPeak = player.divisionActually;
                         player.LPPeak = player.LPActually;
-                    } else if (Tier[player.divisionActually] === Tier[player.divisionPeak]) {
-                        if (player.LPActually > player.LPPeak) {
+                    } else if (Rank[player.rankActually] === Rank[player.rankPeak]) {
+                        if (Tier[player.divisionActually] > Tier[player.divisionPeak]) {
+                            player.divisionPeak = player.divisionActually;
                             player.LPPeak = player.LPActually;
+                        } else if (Tier[player.divisionActually] === Tier[player.divisionPeak]) {
+                            if (player.LPActually > player.LPPeak) {
+                                player.LPPeak = player.LPActually;
+                            }
                         }
                     }
                 }
 
+                player.OTP = [];
                 for (const OTP of OTPData) {
                     player.OTP.push(OTP.championId);
                 }

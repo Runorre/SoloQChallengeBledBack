@@ -1,12 +1,16 @@
 import http from 'http';
 import express from 'express';
 import dotenv from 'dotenv';
+import cron from 'node-cron';
 
 dotenv.config();
 
 import { connectDb } from './services/MongooseService.js';
 import router from './routes/index.js';
 import bodyParser from 'body-parser';
+import refreshPlayer from './services/Event/PlayerRefresh.js';
+import refreshTeam from './services/Event/TeamRefresh.js';
+import resetPlayer from './services/Event/ResetPlayer.js';
 
 (async () => {
     const app = express();
@@ -23,4 +27,16 @@ import bodyParser from 'body-parser';
     })
 
     await connectDb();
+
+    //Time Event
+
+    setInterval(async () => {
+        await refreshPlayer();
+        await refreshTeam();
+    }, 60000);
+
+    cron.schedule('42 23 * * 0', async () => {
+        await resetPlayer();
+    });
+
 })();

@@ -19,11 +19,11 @@ export const PlayerModel = new Schema({
     },
     divisionPeak : {
         type: String,
-        default : "IV"
+        default : "IRON"
     },
     rankPeak : {
         type: String,
-        default : "Iron"
+        default : "IV"
     },
     LPPeak : {
         type: Number,
@@ -31,11 +31,11 @@ export const PlayerModel = new Schema({
     },
     divisionActually : {
         type: String,
-        default : "IV"
+        default : "IRON"
     },
     rankActually : {
         type: String,
-        default : "Iron"
+        default : "IV"
     },
     LPActually : {
         type: Number,
@@ -48,6 +48,14 @@ export const PlayerModel = new Schema({
     OTP: {
         type: [String],
         default: []
+    },
+    numberOfGames: {
+        type: Number,
+        default: 0
+    },
+    penality : {
+        type: Number,
+        default : 0
     }
 });
 

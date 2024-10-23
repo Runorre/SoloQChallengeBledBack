@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import {UserModel} from '../models/index.js';
-import bycrypt from 'bcrypt';
 
 let mongoURI = `mongodb://127.0.0.1:27017`;
 
