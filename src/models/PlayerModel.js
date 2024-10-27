@@ -1,6 +1,11 @@
 import { Schema, Types, model } from 'mongoose';
 
 export const PlayerModel = new Schema({
+    classement: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     name: {
         type: String,
         required: true
@@ -19,7 +24,7 @@ export const PlayerModel = new Schema({
     },
     divisionPeak : {
         type: String,
-        default : "IRON"
+        default : "UNRANKED"
     },
     rankPeak : {
         type: String,
@@ -31,13 +36,17 @@ export const PlayerModel = new Schema({
     },
     divisionActually : {
         type: String,
-        default : "IRON"
+        default : "UNRANKED"
     },
     rankActually : {
         type: String,
         default : "IV"
     },
     LPActually : {
+        type: Number,
+        default : 0
+    },
+    LPTotal : {
         type: Number,
         default : 0
     },
@@ -49,6 +58,10 @@ export const PlayerModel = new Schema({
         type: [String],
         default: []
     },
+    totalOfNbrOfGames: {
+        type: Number,
+        default: 0
+    },
     numberOfGames: {
         type: Number,
         default: 0
@@ -56,6 +69,10 @@ export const PlayerModel = new Schema({
     penality : {
         type: Number,
         default : 0
+    },
+    team : {
+        type: Types.ObjectId,
+        ref: 'Team'
     }
 });
 

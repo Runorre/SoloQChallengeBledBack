@@ -23,8 +23,8 @@ const Tier = {
 export default {
     createTeam : async (req, res) => {
         try {
-            const {teamName} = req.body;
-            if (!teamName) {
+            const {teamName, shortTeamName} = req.body;
+            if (!teamName || !shortTeamName) {
                 return res.status(400).json({
                     success: false,
                     message: 'Missing required fields'
@@ -32,7 +32,8 @@ export default {
             }
 
             const team = new TeamModel({
-                TeamName : teamName
+                TeamName : teamName,
+                ShortTeamName : shortTeamName
             });
 
             await team.save();
@@ -60,15 +61,24 @@ export default {
             }
 
             const team = await TeamModel.findById(teamId);
+            const player = await PlayerModel.findById(playerId);
             if (!team) {
                 return res.status(404).json({
                     success: false,
                     message: 'Team not found'
                 });
             }
+            if (!player) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Player not found'
+                });
+            }
 
             team.members.push(playerId);
+            player.team = teamId;
             await team.save();
+            await player.save();
 
             return res.status(200).json({
                 success: true,
@@ -128,7 +138,7 @@ export default {
     },
     getTeams : async (req, res) => {
         try {
-            const teams = await TeamModel.find().populate('members');
+            const teams = await TeamModel.find().populate('members').sort({LPTotal: -1});
             if (!teams) {
                 return res.status(404).json({
                     success: false,

@@ -1,6 +1,7 @@
 import { TeamModel } from "../../models/index.js";
 
 const Rank = {
+    UNRANKED: 0,
     IRON: 0,
     BRONZE: 400,
     SILVER: 800,
@@ -42,6 +43,7 @@ async function refreshTeam() {
                     LP = Rank[member.divisionActually] + Tier[member.rankActually] + member.LPActually;
                 else
                     LP = Rank[member.rankActually] + member.LPActually;
+
                 penalityLP = (member.penality * 25);
                 LPTotal += (LP - penalityLP);
             }

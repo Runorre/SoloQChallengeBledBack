@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PlayerModel } from "../models/index.js";
+import { PlayerModel, TeamModel } from "../models/index.js";
 
 const Tier = {
     IRON: 0,
@@ -24,7 +24,7 @@ const Rank = {
 export default {
     addPlayer: async (req, res) => {
         try {
-            const {gameName, tagLine, nameOfPlayer} = req.body;
+            const {gameName, tagLine, nameOfPlayer, teamId} = req.body;
             if (!gameName || !tagLine || !nameOfPlayer) {
                 return res.status(400).json({
                     success: false,
@@ -59,6 +59,15 @@ export default {
             });
             await player.save();
 
+            if (teamId) {
+                const team = await TeamModel.findById(teamId);
+                team.members.push(player._id);
+                player.team = team._id;
+                await team.save();
+            }
+
+            await player.save();
+
             return res.status(201).json({
                 success: true,
                 message: 'Player added successfully',
@@ -75,7 +84,22 @@ export default {
     },
     getPlayers: async (req, res) => {
         try {
-            const players = await PlayerModel.find().select({name: 1, summonerName: 1, rankActually: 1, divisionActually : 1, LPActually: 1, rankPeak: 1, divisionPeak : 1, LPPeak: 1, profileIconId: 1, numberOfGames : 1, penality : 1, _id : 1});
+            const players = await PlayerModel.find().select({
+                name: 1,
+                classement: 1,
+                summonerName: 1,
+                rankActually: 1,
+                divisionActually : 1,
+                LPActually: 1,
+                rankPeak: 1,
+                divisionPeak : 1,
+                LPPeak: 1,
+                profileIconId: 1,
+                totalOfNbrOfGames: 1,
+                numberOfGames : 1,
+                penality : 1,
+                _id : 1, team : 1})
+                .sort({classement: 1}).populate('team');
             if (!players) {
                 return res.status(404).json({
                     success: false,

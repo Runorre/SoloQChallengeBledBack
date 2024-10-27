@@ -5,6 +5,10 @@ export const TeamModel = new Schema({
         type : String,
         required : true
     },
+    ShortTeamName : {
+        type : String,
+        required : true
+    },
     members : {
         type : [{
             type: Schema.Types.ObjectId,
