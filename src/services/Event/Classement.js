@@ -25,7 +25,7 @@ async function refreshClassement(players) {
             return 84;
         }
 
-        players.sort((a, b) => b.LPtotal - a.LPtotal);
+        players.sort((a, b) => b.LPTotal - a.LPTotal);
 
         for (let i = 0; i < players.length; i++) {
             const player = players[i];
