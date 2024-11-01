@@ -43,8 +43,7 @@ async function refreshPlayer() {
                     'X-Riot-Token': process.env.RIOT_API_KEY
                 }
             });
-        
-            player.summonerId = summonerData.data.id;
+
             player.profileIconId = summonerData.data.profileIconId;
         
             if (rankedData.data.length !== 0) {
