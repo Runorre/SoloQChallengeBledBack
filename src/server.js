@@ -16,8 +16,8 @@ import refreshTeam from './services/Event/TeamRefresh.js';
 import resetPlayer from './services/Event/ResetPlayer.js';
 
 const httpsOptions = {
-    key: fs.readFileSync(PATH_KEY_HTTPS),
-    cert: fs.readFileSync(PATH_CERF_HTTPS)
+    key: fs.readFileSync(process.env.PATH_KEY_HTTPS),
+    cert: fs.readFileSync(process.env.PATH_CERF_HTTPS)
 };
 
 
