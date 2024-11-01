@@ -3,6 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import cors from 'cors';
+import https from 'https';
 
 dotenv.config();
 
@@ -12,6 +13,12 @@ import bodyParser from 'body-parser';
 import refreshPlayer from './services/Event/PlayerRefresh.js';
 import refreshTeam from './services/Event/TeamRefresh.js';
 import resetPlayer from './services/Event/ResetPlayer.js';
+
+const httpsOptions = {
+    key: fs.readFileSync(PATH_KEY_HTTPS),
+    cert: fs.readFileSync(PATH_CERF_HTTPS)
+};
+
 
 (async () => {
     const app = express();
@@ -26,9 +33,16 @@ import resetPlayer from './services/Event/ResetPlayer.js';
 
     const server = http.createServer(app);
 
-    server.listen(4000, () => {
-        console.log('Server is running on http://localhost:4000');
+    const securedServer = https.createServer(httpsOptions, app);
+
+    server.listen(process.env.PORT_HTTP, () => {
+        console.log(`HTTP Port : ${process.env.PORT_HTTP}`);
     })
+
+    securedServer.listen(process.env.PORT_HTTPS, () => {
+        console.log(`HTTPS Port : ${process.env.PORT_HTTPS}`);
+    });
+    
 
     await connectDb();
 
