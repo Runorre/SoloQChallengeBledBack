@@ -59,9 +59,9 @@ async function refreshPlayer() {
                     if (player.rankActually !== rankedSoloData.rank || player.divisionActually !== rankedSoloData.tier || player.LPActually !== rankedSoloData.leaguePoints) {
                         player.numberOfGames++;
                         player.totalOfNbrOfGames++;
-                        if (player.numberOfGames > 21) {
-                            player.penality += 1;
-                        }
+                        // if (player.numberOfGames > 21) {
+                        //     player.penality += 1;
+                        // }
                     }
             
                     player.divisionActually = rankedSoloData.tier;
