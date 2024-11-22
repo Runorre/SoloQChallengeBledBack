@@ -84,9 +84,9 @@ async function refreshPlayer() {
                             }
                         }
                         if (player.divisionActually === "MASTER" || player.divisionActually === "GRANDMASTER" || player.divisionActually === "CHALLENGER") {
-                            player.LPTotal = Rank[player.divisionActually] + player.LPActually;
+                            player.LPTotal = Rank[player.divisionActually] + player.LPActually - (player.penality * 25);
                         } else {
-                            player.LPTotal = Rank[player.divisionActually] + Tier[player.rankActually] + player.LPActually;
+                            player.LPTotal = Rank[player.divisionActually] + Tier[player.rankActually] + player.LPActually - (player.penality * 25);
                         }
                     } else {
                         player.LPTotal = 0;
